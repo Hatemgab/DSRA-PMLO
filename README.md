@@ -1,6 +1,14 @@
 # DSAR-PMLO
 **A parametric adaptive sampling algorithm for efficient IoT data collection.**
 
+## Result Demonstration
+<div align="center">
+  <video src="./assets/result_animation.mp4" width="80%" controls muted>
+  </video>
+</div>
+> *Above: Dynamic demonstration of the adaptive sampling process。*
+
+
 ## Project Overview
 This tool focuses on the analysis and reconstruction of wireless sensor data. In the context of IoT, data transmission is the most energy-consuming activity in Wireless Sensor Networks(WSNs). The goal of this project is to transmit data efficiently by collecting the minimum amount of samples required to meet a predetermined error threshold.
 
@@ -62,6 +70,3 @@ Option B: Manual Mode (Interactice Tuning)
 
 ## Questions & Feedback
 Please open a GitHub Issue. This allows the community to benefit from the discussion and ensures the project remains maintainable.
-
-## Command to run animation
-manim -pql adaptive_iot_sampling.py AdaptiveIoTSampling
