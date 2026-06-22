@@ -226,69 +226,26 @@ The final graph shows:
 - x-axis: `Time(S)`
 - y-axis: `Data value`
 
-## Images To Add Later
-
-Create this folder for README images:
-
-```text
-docs/assets/
-```
-
-Suggested image files:
-
-```text
-docs/assets/manual_coarse_grid_search.png
-docs/assets/manual_zoomed_grid_search.png
-docs/assets/manual_fine_grid_search.png
-docs/assets/manual_final_reconstruction.png
-docs/assets/automated_final_reconstruction.png
-```
-
-Recommended README placement:
 
 ### Manual Mode Example
 
-Add the coarse grid search image here:
+Coarse grid search image:
 
 ```markdown
-![Manual coarse grid search](docs/assets/manual_coarse_grid_search.png)
+![Manual coarse grid search](./docs/assets/manual_coarse_grid_search.png)
 ```
 
-Caption idea: *The coarse grid search helps the user locate the general E/S area worth zooming into.*
-
-Add the fine grid search image here:
+Zoomed grid search image:
 
 ```markdown
-![Manual zoomed grid search](docs/assets/manual_zoomed_grid_search.png)
+![Manual zoomed grid search](./docs/assets/manual_zoomed_grid_search.png)
 ```
 
-Caption idea: *The zoomed grid search focuses on the selected E/S area from the coarse search.*
-
-Add the fine grid search image here:
+Fine grid search image:
 
 ```markdown
-![Manual fine grid search](docs/assets/manual_fine_grid_search.png)
+![Manual fine grid search](./docs/assets/manual_fine_grid_search.png)
 ```
-
-Caption idea: *The fine grid search gives the user one last zoom-in before dual annealing optimization.*
-
-Add the final reconstruction image here:
-
-```markdown
-![Manual final reconstruction](docs/assets/manual_final_reconstruction.png)
-```
-
-Caption idea: *The final reconstruction compares the original signal, reconstructed signal, and selected sampling points.*
-
-### Automated Mode Example
-
-Add the automated reconstruction image here:
-
-```markdown
-![Automated final reconstruction](docs/assets/automated_final_reconstruction.png)
-```
-
-Caption idea: *Automated mode runs the coarse-to-fine grid search and final optimization without user-selected zoom ranges.*
 
 ## Using The Package In Your Own Python Code
 
