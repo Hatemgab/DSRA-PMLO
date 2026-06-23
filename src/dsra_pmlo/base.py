@@ -95,7 +95,6 @@ class DSRABase:
         '''Correlation function that you provide'''
         return 100 * np.dot(f, g) / (math.sqrt(np.dot(f, f)) * math.sqrt(np.dot(g, g)))
     
-    # Check this article for MAAPE "A new metric of absolute percentage error for intermittent demand forecasts"
     def MAAPE(self, f,g):
         EPSILON = 1e-10
         return np.mean(np.arctan(np.abs((f - g) / (f + EPSILON)))) * 100
@@ -120,7 +119,7 @@ class DSRABase:
         days.append(prev_meas)
         num_of_meas = len(days)
         
-        if prev_meas != len(data) - 1:                        # to include the last measurement, in case the last point from DSRA is not the last point of the oriognal data (to include the last measurements  even it is no considered)
+        if prev_meas != len(data) - 1: # to include the last measurement, in case the last point from DSRA is not the last point of the oriognal data (to include the last measurements  even it is no considered)
             measurements.append(data[-1])
             days.append(len(data) - 1)
         
@@ -128,17 +127,21 @@ class DSRABase:
             interp_sampl = self.interp_linear(days, measurements)
         else:
             interp_sampl = self.interp_quadratic(days, measurements)
-    
+            
+        # Small buffer to let similarity threshold stay strict but stable
+        eps = 1e-6
         if error == 'correlation':
             similarity = self.cor(data, interp_sampl)
-            criterion = similarity >= (min_sim * 0.99)
+            criterion = similarity >= min_sim - eps
         else:
             similarity = self.MAAPE(data, interp_sampl)
-            criterion = similarity <= (min_sim * 1.1)
+            criterion = similarity <= min_sim + eps
         
+        # If E and S don't meet the similarity threshold, return a large number to show failure
         if not criterion:
-            return len(data) * 10 + abs(similarity - min_sim) * 100
+            return len(data) * 10 + abs(similarity - min_sim) * 100  # similarity is current threshold, min_sim is target threshold
 
+        # Otherwise, return the number of measurements
         return num_of_meas
 
     def cal_dsra_grid(self, range_k, range_c):
