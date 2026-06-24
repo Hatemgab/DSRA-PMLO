@@ -1,5 +1,8 @@
 # src/dsra_pmlo/base.py
+from pathlib import Path
+
 import pandas as pd
+from pandas.errors import EmptyDataError
 from matplotlib import pyplot as plt
 import numpy as np
 import math
@@ -7,7 +10,7 @@ import math
 # Base class for DSRA PMLO models
 class DSRABase:
     # Set default values for parameters
-    def __init__(self, filepath, similarity_method="MAAPE", interpolation_method="quadratic", similarity_threshold=2, target_col="Amplitude"):
+    def __init__(self, filepath, similarity_method="MAAPE", interpolation_method="quadratic", similarity_threshold=1, target_col="Amplitude"):
         self.filepath = filepath
         self.target_col = target_col
         self.similarity_method = similarity_method
@@ -18,13 +21,41 @@ class DSRABase:
         self.raw_data = None
 
     def load_data(self, target_size=None): 
+        self._validate_config()
+        self._validate_target_size(target_size)
+
         # Load data from the file
         print(f"Loading data from: {self.filepath}")
-        self.raw_data = pd.read_csv(self.filepath, sep=r'\s+')
+        data_path = Path(self.filepath)
+        if not data_path.exists():
+            raise FileNotFoundError(f"Data file not found: {self.filepath}")
+
+        if not data_path.is_file():
+            raise ValueError(f"Data path is not a file: {self.filepath}")
+
+        try:
+            self.raw_data = pd.read_csv(data_path, sep=r'\s+')
+        except EmptyDataError as exc:
+            raise ValueError(f"Data file is empty: {self.filepath}") from exc
+        except Exception as exc:
+            raise ValueError(f"Could not read data file '{self.filepath}': {exc}") from exc
+
+        if self.raw_data.empty:
+            raise ValueError(f"Data file has no rows: {self.filepath}")
         
         # Get data length of target column
         if self.target_col in self.raw_data.columns:
-            data_array = np.array(self.raw_data[self.target_col])
+            try:
+                data_array = pd.to_numeric(self.raw_data[self.target_col], errors="raise").to_numpy(dtype=float)
+            except Exception as exc:
+                raise ValueError(f"Target column '{self.target_col}' must contain only numeric values.") from exc
+
+            if len(data_array) < 4:
+                raise ValueError("Data must contain at least 4 points so both train and test data can be evaluated.")
+
+            if not np.all(np.isfinite(data_array)):
+                raise ValueError(f"Target column '{self.target_col}' contains NaN or infinite values.")
+
             if target_size:
                 self.sensor_data_total = np.resize(data_array, target_size)
             else:
@@ -39,10 +70,11 @@ class DSRABase:
             raise ValueError(f"Target column '{self.target_col}' not found. Available columns: {available}")
 
     def prepare_train_data(self):
-        # Default split: first 40% for testing and last 60% for training.
+        # First 40% is reserved for testing; the remaining 60% is used for training.
         split_idx = round(len(self.sensor_data_total) * 0.4)
         
         self.train_data = self.sensor_data_total[split_idx:]  
+        self._validate_data_ready(self.train_data, "Training data")
         print(f"Base Data Split: Train size = {len(self.train_data)} (Last 60%)")
         
     def get_data_summary(self):
@@ -63,6 +95,15 @@ class DSRABase:
             
     def interp_linear(self, x, y):
         '''Linear interpolation'''
+        if len(x) != len(y):
+            raise ValueError("Interpolation x and y must have the same length.")
+
+        if len(x) < 2:
+            raise ValueError("At least 2 measurement points are required for interpolation.")
+
+        if any(x[i] <= x[i - 1] for i in range(1, len(x))):
+            raise ValueError("Measurement indices must be strictly increasing.")
+
         res = []
         for i in range(1, len(x)):
             slope = (y[i] - y[i - 1]) / (x[i] - x[i - 1])
@@ -73,6 +114,15 @@ class DSRABase:
     
     def interp_quadratic(self, x, y):
         '''Quadratic interpolation'''
+        if len(x) != len(y):
+            raise ValueError("Interpolation x and y must have the same length.")
+
+        if len(x) < 2:
+            raise ValueError("At least 2 measurement points are required for interpolation.")
+
+        if any(x[i] <= x[i - 1] for i in range(1, len(x))):
+            raise ValueError("Measurement indices must be strictly increasing.")
+
         if len(x) == 2:
             print('Use linear interpolation instead of polinomial when number of samples equals 2')
             return self.interp_linear(x, y)
@@ -93,7 +143,11 @@ class DSRABase:
     
     def cor(self, f, g):
         '''Correlation function that you provide'''
-        return 100 * np.dot(f, g) / (math.sqrt(np.dot(f, f)) * math.sqrt(np.dot(g, g)))
+        denom = math.sqrt(np.dot(f, f)) * math.sqrt(np.dot(g, g))
+        if denom == 0:
+            raise ValueError("Correlation is undefined for all-zero signals.")
+
+        return 100 * np.dot(f, g) / denom
     
     def MAAPE(self, f,g):
         EPSILON = 1e-10
@@ -102,8 +156,11 @@ class DSRABase:
     def measure(self, params, *other):                                                        
         '''Returns the number of measurements for certain E and S.'''
         data, interpolation, error, min_sim = other
-        data = np.array(data).flatten()
+        data = self._validate_data_ready(data)
         E, S = params
+        if not all(np.isfinite(value) for value in (E, S)):
+            return len(data)
+
         prev_meas = 0
         new_meas = max(1, int(round(E)))
         measurements = []
@@ -119,7 +176,7 @@ class DSRABase:
         days.append(prev_meas)
         num_of_meas = len(days)
         
-        if prev_meas != len(data) - 1: # to include the last measurement, in case the last point from DSRA is not the last point of the oriognal data (to include the last measurements  even it is no considered)
+        if prev_meas != len(data) - 1: # to include the last measurement, in case the last point from DSRA is not the last point of the oriognal data (to include the last measurements even it is not considered)
             measurements.append(data[-1])
             days.append(len(data) - 1)
         
@@ -127,22 +184,13 @@ class DSRABase:
             interp_sampl = self.interp_linear(days, measurements)
         else:
             interp_sampl = self.interp_quadratic(days, measurements)
-            
-        # Small buffer to let similarity threshold stay strict but stable
-        eps = 1e-6
+
         if error == 'correlation':
             similarity = self.cor(data, interp_sampl)
-            criterion = similarity >= min_sim - eps
+            return num_of_meas if similarity >= min_sim else len(data)
         else:
             similarity = self.MAAPE(data, interp_sampl)
-            criterion = similarity <= min_sim + eps
-        
-        # If E and S don't meet the similarity threshold, return a large number to show failure
-        if not criterion:
-            return len(data) * 10 + abs(similarity - min_sim) * 100  # similarity is current threshold, min_sim is target threshold
-
-        # Otherwise, return the number of measurements
-        return num_of_meas
+            return num_of_meas if similarity <= min_sim else len(data)
 
     def cal_dsra_grid(self, range_k, range_c):
         """
@@ -150,7 +198,7 @@ class DSRABase:
         Returns three lists: x (E values), y (S values), and z (Number of measurements).
         """
         z_vals, x_vals, y_vals = [], [], []
-        data = self.train_data
+        data = self._validate_data_ready(self.train_data, "Training data")
         
         for k in range_k:
             for c in range_c:
@@ -175,6 +223,10 @@ class DSRABase:
         """
         if data is None:
             data = self.train_data
+
+        data = self._validate_data_ready(data)
+        if not all(np.isfinite(value) for value in (E, S)):
+            raise ValueError("E and S must be finite numbers.")
             
         prev_meas = 0
         new_meas = max(1, int(round(E))) 
@@ -204,6 +256,9 @@ class DSRABase:
             reconstructed = self.interp_quadratic(indices, measurements)
             
         # Metrics
+        if len(reconstructed) != len(data):
+            raise ValueError("Reconstructed signal length does not match source data length.")
+
         if self.similarity_method == 'correlation':
             similarity = self.cor(data, reconstructed)
         else:
@@ -218,7 +273,7 @@ class DSRABase:
         return similarity, reconstructed, measurements, indices, reduction, num_samples
     
     def plot_reconstruction(self, E, S, data=None, title_prefix="Final Evaluation"):
-        # if pass in test data use it，else use training data
+        # If pass in test data use it，else use training data
         target_data = data if data is not None else self.train_data
         
         # Get result
@@ -265,8 +320,10 @@ class DSRABase:
             print(f"Loading new test file: {new_filepath}")
             
         # Prepare test data
+        self._validate_data_ready(self.sensor_data_total, "Total data")
         split_idx = round(len(self.sensor_data_total) * split_ratio)
         test_data = self.sensor_data_total[:split_idx]
+        test_data = self._validate_data_ready(test_data, "Test data")
 
         print(f"\n--- TEST SET EVALUATION (First {int(split_ratio*100)}%) ---")
         print(f"Testing data length: {len(test_data)}")
@@ -284,3 +341,65 @@ class DSRABase:
         self.plot_reconstruction(E, S, data=test_data, title_prefix="Test Evaluation")
     
         return sim, red, num_samples
+    
+    def _validate_config(self):
+        if self.interpolation_method not in {"linear", "quadratic"}:
+            raise ValueError("interpolation_method must be 'linear' or 'quadratic'.")
+
+        if self.similarity_method not in {"MAAPE", "correlation"}:
+            raise ValueError("similarity_method must be 'MAAPE' or 'correlation'.")
+
+        if not isinstance(self.similarity_threshold, (int, float)) or not np.isfinite(self.similarity_threshold):
+            raise ValueError("similarity_threshold must be a finite number.")
+
+        if self.similarity_method == "MAAPE" and self.similarity_threshold <= 0:
+            raise ValueError("MAAPE similarity_threshold must be greater than 0.")
+
+        if not isinstance(self.target_col, str) or not self.target_col:
+            raise ValueError("target_col must be a non-empty string.")
+
+    def _validate_target_size(self, target_size):
+        if target_size is None:
+            return
+
+        if not isinstance(target_size, int):
+            raise ValueError("target_size must be an integer or None.")
+
+        if target_size < 4:
+            raise ValueError("target_size must be at least 4 so both train and test data have enough points.")
+
+    def _validate_data_ready(self, data, label="data"):
+        if data is None:
+            raise ValueError(f"{label} is not loaded. Call load_data() first.")
+
+        data = np.array(data).flatten()
+        if len(data) < 2:
+            raise ValueError(f"{label} must contain at least 2 points.")
+
+        if not np.all(np.isfinite(data)):
+            raise ValueError(f"{label} contains NaN or infinite values.")
+
+        return data
+
+    def _validate_bounds(self, bounds):
+        if bounds is None:
+            raise ValueError("Optimization bounds are required.")
+
+        if len(bounds) != 2:
+            raise ValueError("Bounds must contain exactly two ranges: one for E and one for S.")
+
+        clean_bounds = []
+        for label, bound in zip(("E", "S"), bounds):
+            if len(bound) != 2:
+                raise ValueError(f"{label} bound must be a pair: (lower, upper).")
+
+            lower, upper = bound
+            if not all(isinstance(value, (int, float)) and np.isfinite(value) for value in (lower, upper)):
+                raise ValueError(f"{label} bounds must be finite numbers.")
+
+            if lower >= upper:
+                raise ValueError(f"{label} lower bound must be less than upper bound.")
+
+            clean_bounds.append((lower, upper))
+
+        return clean_bounds

@@ -3,6 +3,7 @@
 from .base import DSRABase
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.optimize import dual_annealing
 
 class DSRAManual(DSRABase):
     # Receive parameters from user and pass to base class
@@ -12,10 +13,11 @@ class DSRAManual(DSRABase):
     def prepare_train_data(self):
         total_len = len(self.sensor_data_total)
         
-        # Manual mode uses the last 60% for training.
+        # First 40% is reserved for testing; the remaining 60% is used for training.
         split_limit = round(total_len * 0.4)
         
-        self.train_data = self.sensor_data_total[split_limit:]
+        self.train_data = self.sensor_data_total[split_limit:] # len(data) is the total length of training data
+        self._validate_data_ready(self.train_data, "Training data")
         print(f"Data prepared: Total={total_len}, Test Boundary={split_limit}, Training Size={len(self.train_data)}")
 
     # Load data manually
@@ -51,3 +53,32 @@ class DSRAManual(DSRABase):
         plt.show()
 
         return [z, x, y]
+
+    def optimize_and_reconstruct(self, bounds):
+        """
+        Optimize E and S inside manually selected bounds using the standard DSRA logic.
+        """
+        bounds = self._validate_bounds(bounds)
+
+        arg_package = (
+            self.train_data,
+            self.interpolation_method,
+            self.similarity_method,
+            self.similarity_threshold,
+        )
+
+        resdual = dual_annealing(
+            self.measure,
+            bounds,
+            args=arg_package,
+            maxiter=10000,
+        )
+        E_opt, S_opt = resdual.x
+
+        sim, recon, meas, idx, red, num_samples = self.reconstruct_signal(
+            E_opt,
+            S_opt,
+            data=self.train_data,
+        )
+
+        return E_opt, S_opt, red, sim, recon

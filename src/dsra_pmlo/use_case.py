@@ -1,18 +1,24 @@
+from pathlib import Path
+import sys
+
+SRC_DIR = Path(__file__).resolve().parents[1]
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+
 # Main entiry point for running DSRA PMLO models
 from dsra_pmlo.manual import DSRAManual
 from dsra_pmlo.automated import DSRAAutomated
-from scipy.optimize import dual_annealing
 
 # Only change paramaters from config
 config = {
-    "file": "src/dsra_pmlo/data/synthetic_data_50Hz.txt",
+    "file": "src/dsra_pmlo/data/motor_no_load.txt",
     "mode": "automated", # change 'automated' to 'manual' for setting search ranges manually
     "target_col": "Amplitude",
     "target_size": 400,
-    "threshold": 5,
+    "threshold": 2,
     # Manual mode Step 1 ranges. Edit these for the first broad search.
     "manual_step1_e": (0, 30, 2),
-    "manual_step1_s": (0, 450, 5),
+    "manual_step1_s": (-5, 450, 5),
 }
 
 
@@ -48,7 +54,7 @@ def suggest_zoom_ranges(plot_result, fallback_e, fallback_s, padding=4):
     best_s = int(s_values[best_index])
 
     suggested_e = (max(0, best_e - padding), best_e + padding, 1)
-    suggested_s = (max(0, best_s - padding), best_s + padding, 1)
+    suggested_s = (best_s - padding, best_s + padding, 1)
     return suggested_e, suggested_s
 
 # Main flow
@@ -62,7 +68,7 @@ def main():
         )
         model.load_data(target_size=config["target_size"])
         
-        # Execute coarse-to-fine grid search
+        # Execute coarse-to-fine grid search, then optimize around the selected seed.
         _, seeds = model.run_iterative_grid_search()
         E_opt, S_opt, _, _, _ = model.optimize_and_reconstruct(seeds)
         
@@ -87,7 +93,7 @@ def main():
         step2_e, step2_s = suggest_zoom_ranges(
             broad_result,
             fallback_e=(1, 5, 1),
-            fallback_s=(0, 10, 1),
+            fallback_s=(-1, 10, 1),
         )
 
         print("\nLook at the Step 1 plot and choose the area to zoom into for Step 2.")
@@ -112,16 +118,18 @@ def main():
         print("\n--- Step 3: Fine Grid Search ---")
         model.plot2d(range(*step3_e), range(*step3_s))
 
-        arg_package = (model.train_data, model.interpolation_method, 
-                       model.similarity_method, model.similarity_threshold)
-        
         manual_bounds = [(step3_e[0], step3_e[1]), (step3_s[0], step3_s[1])]
         
         print(f"Starting Dual Annealing Optimization with E/S bounds: {manual_bounds}")
-        resdual = dual_annealing(model.measure, manual_bounds, args=arg_package, maxiter=10000)
-        E_optimized, S_optimized = resdual.x
+        E_optimized, S_optimized, _, _, _ = model.optimize_and_reconstruct(manual_bounds)
 
         # Plot and evaluate test result
         model.evaluate_test_set(E=E_optimized, S=S_optimized)
+    else:
+        raise ValueError("config['mode'] must be either 'automated' or 'manual'.")
+
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as exc:
+        print(f"\nError: {exc}")

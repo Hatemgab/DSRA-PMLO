@@ -12,11 +12,11 @@ class DSRAAutomated(DSRABase):
     def prepare_train_data(self):
         total_len = len(self.sensor_data_total)
         
-        # Automated mode uses the same split as manual mode:
-        # first 40% for testing, last 60% for training.
+        # First 40% is reserved for testing; the remaining 60% is used for training.
         split_limit = round(total_len * 0.4)
         
-        self.train_data = self.sensor_data_total[split_limit:]
+        self.train_data = self.sensor_data_total[split_limit:] # len(data) is the total length of training data
+        self._validate_data_ready(self.train_data, "Training data")
         print(f"Data prepared: Total={total_len}, Test Boundary={split_limit}, Training Size={len(self.train_data)}")
         
     # Load data automatically
@@ -57,6 +57,10 @@ class DSRAAutomated(DSRABase):
         """
         if data is None:
             data = self.train_data
+
+        data = self._validate_data_ready(data)
+        if not all(np.isfinite(value) for value in (E, S)):
+            raise ValueError("E and S must be finite numbers.")
             
         current_TBM = 42 # Initial value
         prev_TBM = 1
@@ -98,6 +102,12 @@ class DSRAAutomated(DSRABase):
         """
         # Ensure reconstruct is a list for easy padding
         reconstruct_lst = list(reconstruct)
+        if not reconstruct_lst:
+            raise ValueError("Cannot resize an empty reconstruction.")
+
+        if original_size <= 0:
+            raise ValueError("original_size must be greater than 0.")
+
         diff = len(reconstruct_lst) - original_size
         # If the reconstruction is shorter than orginal, pad with the last value
         if diff <= 0 and diff > -500 :
@@ -111,13 +121,16 @@ class DSRAAutomated(DSRABase):
             return np.array(reconstruct_lst)
         return np.resize(reconstruct, original_size)
     
-    def run_iterative_grid_search(self, rangeK_init=(0, 30, 2), rangeC_init=(0, 450, 5), max_iterations=10):
+    def run_iterative_grid_search(self, rangeK_init=(0, 30, 2), rangeC_init=(-20, 450, 5), max_iterations=10):
         """
         Runs the automated notebook coarse-to-fine grid search and returns the final dual
         annealing seed bounds: [measurements, E, S].
         """
-        rangeK = rangeK_init
-        rangeC = rangeC_init
+        rangeK = self._validate_grid_range(rangeK_init, "E")
+        rangeC = self._validate_grid_range(rangeC_init, "S")
+        if max_iterations <= 0:
+            raise ValueError("max_iterations must be greater than 0.")
+
         iteration = 0
         search_history = []
         best_values = None
@@ -158,42 +171,61 @@ class DSRAAutomated(DSRABase):
         print(f"\nCoarse-to-fine grid search finished. Seeds found: E={seeds[1]}, S={seeds[2]}")
         return search_history, seeds
     
-    def optimize_and_reconstruct(self, seed_values):
+    def optimize_and_reconstruct(self, seed_values=None, bounds=None):
         """
-        seed_values: [measurements, E, S]
+        Optimize E and S using seed-centered bounds from the coarse-to-fine search.
         """
-        if not seed_values:
-            raise ValueError("No seed values available. Run coarse-to-fine E/S search first.")
+        if bounds is None:
+            if seed_values is not None:
+                if not seed_values:
+                    raise ValueError("No seed values available. Run coarse-to-fine E/S search with a wider range or looser threshold.")
 
-        bounds = [(max(0, seed_values[1] - 2), seed_values[1] + 2), 
-                  (max(0, seed_values[2] - 2), seed_values[2] + 2)]
+                if len(seed_values) != 3:
+                    raise ValueError("seed_values must be [measurements, E, S].")
+
+                bounds = [
+                    (max(0, seed_values[1] - 2), seed_values[1] + 2),
+                    (seed_values[2] - 2, seed_values[2] + 2),
+                ]
+            else:
+                bounds = [(1, 8), (-1, 15)]
+
+        bounds = self._validate_bounds(bounds)
         
         arg_package = (self.train_data, self.interpolation_method, 
                        self.similarity_method, self.similarity_threshold)
 
-        # Optimization using dual annealing
         resdual = dual_annealing(
             self.measure,
             bounds,
             args=arg_package,
-            maxiter=1000,
-            initial_temp=5230.0,
-            restart_temp_ratio=2e-5,
-            visit=2.62,
-            accept=-5.0,
+            maxiter=10000,
         )
         E_opt, S_opt = resdual.x
 
         sim, recon, meas, idx, red, num_samples = self.reconstruct_signal(
-            E_opt, S_opt, data=self.sensor_data_total
+            E_opt, S_opt, data=self.train_data
         )
         
-        inter_data = [recon[day] for day in idx]
-        reconstructed_full = self.my_resize(
-            self.get_tbm_reconstruction(E_opt, S_opt, data=inter_data),
-            len(self.sensor_data_total),
-        )
-        
-        return E_opt, S_opt, red, sim, reconstructed_full
+        return E_opt, S_opt, red, sim, recon
+
+    def _validate_grid_range(self, range_values, label):
+        if not isinstance(range_values, (list, tuple)):
+            raise ValueError(f"{label} search range must be (start, stop, step).")
+
+        if len(range_values) != 3:
+            raise ValueError(f"{label} search range must be (start, stop, step).")
+
+        start, stop, step = range_values
+        if not all(isinstance(value, int) for value in (start, stop, step)):
+            raise ValueError(f"{label} search range values must be integers.")
+
+        if step <= 0:
+            raise ValueError(f"{label} search range step must be greater than 0.")
+
+        if stop <= start:
+            raise ValueError(f"{label} search range stop must be greater than start.")
+
+        return range_values
 
   
