@@ -24,7 +24,11 @@ Related background paper:
 
 - *Dynamic sampling rate algorithm (DSRA) implemented in self-adaptive software architecture: a way to reduce the energy consumption of wireless sensors through event-based sampling*
 
-If you use this algorithm for research, please cite the parametric machine learning-based adaptive sampling paper. The code is released under the MIT license, but citation is still requested for academic use.
+<!--
+If you use this algorithm for research, please cite the parametric machine
+learning-based adaptive sampling paper. The code is released under the MIT
+license, but citation is still requested for academic use.
+-->
 
 ## Result Demonstration
 
