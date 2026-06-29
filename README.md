@@ -3,6 +3,14 @@
 **A parametric adaptive sampling algorithm for efficient IoT data collection.**
 
 DSRA-PMLO helps reduce sensor data transmission by selecting fewer sampling points while keeping the reconstructed signal within a user-defined error threshold.
+The goal is to use recorded data for adaptive sampling without violating the
+predefined approximation constraint.
+
+![DSRA-PMLO workflow](./docs/assets/dsra_pmlo_workflow.png)
+
+The main input is the selected data file and target column. The main outputs
+are the optimized E and S values, the test-set error, the sampling reduction,
+and the reconstruction plot.
 
 ## Result Demonstration
 
@@ -89,6 +97,7 @@ In Colab, install the project as a Python package before importing it.
 !git clone https://github.com/Hatemgab/DSRA-PMLO.git
 %cd DSRA-PMLO
 !python -m pip install -e .
+%cd src
 ```
 
 Then import the package:
@@ -104,10 +113,25 @@ Or run the configured use case:
 !python -m dsra_pmlo.use_case
 ```
 
+The output text and final chart appear directly below the Colab cell that runs
+the use case. The chart is not saved to a file unless you add save code yourself.
+
+In Google Colab, use a full data path in `use_case.py` to avoid file path errors:
+
+```python
+config["file"] = "/content/DSRA-PMLO/src/dsra_pmlo/data/synthetic_data.txt"
+```
+
 If you upload the project folder manually to Colab instead of cloning from GitHub, make sure the current working directory is the repository root, the folder that contains `pyproject.toml`, before running:
 
 ```python
 !python -m pip install -e .
+```
+
+After installation, move into `src` before running the use case:
+
+```python
+%cd src
 ```
 
 ## Data Setup
@@ -136,7 +160,7 @@ config = {
     "target_size": 400,
     "threshold": 2,
     "manual_step1_e": (0, 30, 2),
-    "manual_step1_s": (0, 450, 5),
+    "manual_step1_s": (-20, 450, 5),
 }
 ```
 
