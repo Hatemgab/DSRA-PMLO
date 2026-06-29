@@ -307,7 +307,7 @@ class DSRABase:
         plt.axhline(y=baseline, color='gray', linestyle='--', alpha=0.5)
         
         # Show how many samples are used 
-        plt.title(f"{title_prefix} | Samples Used: {num_samples}/{len(target_data)} | Reduction: {red:.2f}%")
+        plt.title(f"Number of samples = {num_samples}, error = {sim} %, sampling reduced by = {red}%")
         plt.xlabel("Time(S)")
         plt.ylabel("Data value")
         plt.legend(loc='upper right')

@@ -24,14 +24,14 @@ class DSRAAutomated(DSRABase):
         print("Automated loading...")
         return super().load_data(target_size=target_size)
     
-    def find_optimal_params(self, range_k, range_c):
+    def find_optimal_params(self, range_e, range_s):
         """
         Iterates through the grid and returns the configuration with the 
         minimum number of measurements that still satisfies the similarity threshold.
         Returns: [Min Measurements, Optimal E, Optimal S]
         """
         # Request calculation results from the base class
-        x, y, z = self.cal_dsra_grid(range_k, range_c)
+        x, y, z = self.cal_dsra_grid(range_e, range_s)
         
         if not z:
             print("Automation failed. No valid parameters found.")
@@ -50,13 +50,18 @@ class DSRAAutomated(DSRABase):
               
         return optimal_set
 
-    def run_iterative_grid_search(self, rangeK_init=(0, 30, 2), rangeC_init=(-20, 450, 5), max_iterations=10):
+    def run_iterative_grid_search(
+        self,
+        range_e_init=(0, 30, 2),
+        range_s_init=(-20, 450, 5),
+        max_iterations=10,
+    ):
         """
         Runs the automated notebook coarse-to-fine grid search and returns the final dual
         annealing seed bounds: [measurements, E, S].
         """
-        rangeK = self._validate_grid_range(rangeK_init, "E")
-        rangeC = self._validate_grid_range(rangeC_init, "S")
+        range_e = self._validate_grid_range(range_e_init, "E")
+        range_s = self._validate_grid_range(range_s_init, "S")
         if max_iterations <= 0:
             raise ValueError("max_iterations must be greater than 0.")
 
@@ -67,28 +72,32 @@ class DSRAAutomated(DSRABase):
         print("Starting coarse-to-fine grid search...")
 
         while iteration < max_iterations:
-            kx, ky, kz = rangeK
-            cx, cy, cz_step = rangeC
+            e_start, e_stop, e_step = range_e
+            s_start, s_stop, s_step = range_s
 
-            optimal_values = self.find_optimal_params(range(kx, ky, kz), range(cx, cy, cz_step))
+            optimal_values = self.find_optimal_params(
+                range(e_start, e_stop, e_step),
+                range(s_start, s_stop, s_step),
+            )
 
             if not optimal_values:
                 print("Coarse-to-fine grid search failed to find valid parameters. Breaking loop.")
                 break
 
             best_values = optimal_values
-            best_k = int(optimal_values[1])
-            best_c = int(optimal_values[2])
-            search_history.append([iteration, optimal_values[0], best_k, best_c])
+            best_e = int(optimal_values[1])
+            best_s = int(optimal_values[2])
+            display_iteration = iteration + 1
+            search_history.append([display_iteration, optimal_values[0], best_e, best_s])
 
-            print(f"\n--- Iteration {iteration} ---")
-            print(f"Search Range E: [{kx}, {ky}] Step: {kz}")
-            print(f"Search Range S: [{cx}, {cy}] Step: {cz_step}")
+            print(f"\n--- Iteration {display_iteration} ---")
+            print(f"Search Range E: [{e_start}, {e_stop}] Step: {e_step}")
+            print(f"Search Range S: [{s_start}, {s_stop}] Step: {s_step}")
 
-            rangeK = (max(0, best_k - 4), best_k + 4, 1)
-            rangeC = (max(0, best_c - 4), best_c + 4, 1)
+            range_e = (max(0, best_e - 4), best_e + 4, 1)
+            range_s = (best_s - 4, best_s + 4, 1)
 
-            if kz == 1 and cz_step == 1:
+            if e_step == 1 and s_step == 1:
                 break
 
             iteration += 1
@@ -98,6 +107,7 @@ class DSRAAutomated(DSRABase):
 
         seeds = [best_values[0], int(best_values[1]), int(best_values[2])]
         print(f"\nCoarse-to-fine grid search finished. Seeds found: E={seeds[1]}, S={seeds[2]}")
+        print("Starting final optimization around the selected E and S seed...")
         return search_history, seeds
     
     def optimize_and_reconstruct(self, seed_values=None, bounds=None):

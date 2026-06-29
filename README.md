@@ -22,7 +22,7 @@ The algorithm reconstructs the original signal from selected sampling points and
 ## Current Python Project Structure
 
 ```text
-drsa_pmlo/
+DSRA-PMLO/
 ├── pyproject.toml
 ├── README.md
 └── src/
@@ -60,14 +60,17 @@ Do not run `automated.py`, `manual.py`, or `base.py` directly. They are package 
 From the project root:
 
 ```bash
-cd /path/to/drsa_pmlo
-python3 -m pip install -e .
+cd /path/to/DSRA-PMLO
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e .
 ```
 
 Run the project:
 
 ```bash
-python3 -m dsra_pmlo.use_case
+python -m dsra_pmlo.use_case
 ```
 
 You can also use the installed command:
@@ -192,7 +195,7 @@ Manual mode guides the user through three grid-search plots before dual annealin
 
    ```python
    "manual_step1_e": (0, 30, 2),
-   "manual_step1_s": (0, 450, 5),
+   "manual_step1_s": (-20, 450, 5),
    ```
 
 2. **Zoomed Grid Search**  
@@ -265,7 +268,7 @@ model = DSRAManual(
 )
 
 model.load_data(target_size=400)
-model.plot2d(range(0, 30, 2), range(0, 450, 5))
+model.plot2d(range(0, 30, 2), range(-20, 450, 5))
 ```
 
 ## Troubleshooting

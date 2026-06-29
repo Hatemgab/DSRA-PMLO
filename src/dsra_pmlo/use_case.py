@@ -11,14 +11,14 @@ from dsra_pmlo.automated import DSRAAutomated
 
 # Only change paramaters from config
 config = {
-    "file": "src/dsra_pmlo/data/motor_no_load.txt",
+    "file": "src/dsra_pmlo/data/synthetic_data.txt",
     "mode": "automated", # change 'automated' to 'manual' for setting search ranges manually
     "target_col": "Amplitude",
     "target_size": 400,
-    "threshold": 5,
+    "threshold": 2,
     # Manual mode Step 1 ranges. Edit these for the first broad search.
     "manual_step1_e": (0, 30, 2),
-    "manual_step1_s": (-5, 450, 5),
+    "manual_step1_s": (-20, 450, 5),
 }
 
 
