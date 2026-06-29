@@ -12,6 +12,20 @@ The main input is the selected data file and target column. The main outputs
 are the optimized E and S values, the test-set error, the sampling reduction,
 and the reconstruction plot.
 
+## Authors And Citation
+
+Coauthor: **Sisi Wu**
+
+This project is based on the adaptive sampling method described in this reference:
+
+- Algabroun, H., & Håkansson, L. (2025). Parametric Machine Learning-Based Adaptive Sampling Algorithm for Efficient IoT Data Collection in Environmental Monitoring. *Journal of Network and Systems Management, 33*(1). https://doi.org/10.1007/s10922-024-09881-1
+
+Related background paper:
+
+- *Dynamic sampling rate algorithm (DSRA) implemented in self-adaptive software architecture: a way to reduce the energy consumption of wireless sensors through event-based sampling*
+
+If you use this algorithm for research, please cite the parametric machine learning-based adaptive sampling paper. The code is released under the MIT license, but citation is still requested for academic use.
+
 ## Result Demonstration
 
 https://github.com/user-attachments/assets/a74d40a2-fe6e-4e91-8129-8563600149d8
