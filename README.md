@@ -81,9 +81,14 @@ Do not run `automated.py`, `manual.py`, or `base.py` directly. They are package 
 From the project root:
 
 ```bash
-cd /path/to/DSRA-PMLO-Adaptive-Sampling
-python3 -m venv .venv
-source .venv/bin/activate
+First, clone the repository and install the package.
+git clone https://github.com/Hatemgab/DSRA-PMLO-Adaptive-Sampling.git
+
+cd DSRA-PMLO-Adaptive-Sampling
+
+python3 -m venv .venv  # windows: py -m venv .venv
+source .venv/bin/activate  # windows: .venv\Scripts\activate.bat
+
 python -m pip install --upgrade pip
 python -m pip install -e .
 ```
