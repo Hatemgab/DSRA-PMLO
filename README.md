@@ -14,7 +14,10 @@ and the reconstruction plot.
 
 ## Authors And Citation
 
-Coauthor: **Sisi Wu**
+Authors / Contributors:
+
+- Hatem Algabroun
+- Sisi Wu
 
 This project is based on the adaptive sampling method described in this reference:
 
