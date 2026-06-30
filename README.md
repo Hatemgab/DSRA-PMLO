@@ -53,6 +53,8 @@ Software repository:
              for Efficient IoT Data Collection in Environmental Monitoring},
   journal = {Journal of Network and Systems Management},
   volume  = {33},
+  number  = {1},
+  pages   = {5},
   year    = {2025},
   doi     = {10.1007/s10922-024-09881-1}
 }
