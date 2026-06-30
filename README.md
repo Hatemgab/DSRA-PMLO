@@ -10,18 +10,52 @@ predefined approximation constraint.
 
 DSRA-PMLO Software package input/output: The main input is the selected data file and target column. The main outputs are the optimized E and S values, the test-set error, the sampling reduction, and the reconstruction plot.
 
-## Copyrights And Citation
-This project is based on the adaptive sampling method described in this reference:
+## Citation
+If you use this software in academic research, publications, reports, theses,
+or derived software, please cite both of the following:
 
-- Algabroun, H., & Håkansson, L. (2025). Parametric Machine Learning-Based Adaptive Sampling Algorithm for Efficient IoT Data Collection in Environmental Monitoring. *Journal of Network and Systems Management, 33*(1). https://doi.org/10.1007/s10922-024-09881-1
+### 1. Software repository
 
+Algabroun, H., & Wu, S. (2026). *DSRA-PMLO-Adaptive-Sampling*
+(Version 1.0.0) [Computer software]. GitHub.
+https://github.com/Hatemgab/DSRA-PMLO-Adaptive-Sampling
+
+### 2. Theoretical background
+
+Algabroun, H., & Håkansson, L. (2025).
+Parametric machine learning-based adaptive sampling algorithm for efficient
+IoT data collection in environmental monitoring.
+*Journal of Network and Systems Management, 33*, Article 5.
+https://doi.org/10.1007/s10922-024-09881-1
+
+The software citation credits the implementation and repository contributors.
+The journal article citation credits the theoretical formulation and scientific
+method underlying the implementation.
 Related background paper:
 
-- *Dynamic sampling rate algorithm (DSRA) implemented in self-adaptive software architecture: a way to reduce the energy consumption of wireless sensors through event-based sampling*
+### BibTeX
 
+Software repository:
 
-If you use this algorithm for research, cite those two papers. The code is released under the MIT
-license, but citation is still requested for academic use.
+```bibtex
+@software{algabroun_wu_dsra_pmlo_2026,
+  author    = {Algabroun, Hatem and Wu, Sisi},
+  title     = {{DSRA-PMLO-Adaptive-Sampling}},
+  version   = {1.0.0},
+  year      = {2026},
+  publisher = {GitHub},
+  url       = {https://github.com/Hatemgab/DSRA-PMLO-Adaptive-Sampling}
+}
+
+@article{algabroun_hakansson_dsra_pmlo_2025,
+  author  = {Algabroun, Hatem and Håkansson, Lars},
+  title   = {Parametric Machine Learning-Based Adaptive Sampling Algorithm
+             for Efficient IoT Data Collection in Environmental Monitoring},
+  journal = {Journal of Network and Systems Management},
+  volume  = {33},
+  year    = {2025},
+  doi     = {10.1007/s10922-024-09881-1}
+}
 
 ## Result Demonstration
 
