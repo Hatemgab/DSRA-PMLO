@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "dsra-pmlo"
 version = "1.0.0"
-description = "Dual-Slope Reconstruction Algorithm for Sensor Data"
+description = "Dynamic Sampling Rate Algorithm with Parametric Machine Learning Optimization for adaptive sensor sampling"
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "MIT" } 
