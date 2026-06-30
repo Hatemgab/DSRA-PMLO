@@ -31,7 +31,7 @@ https://doi.org/10.1007/s10922-024-09881-1
 The software citation credits the implementation and repository contributors.
 The journal article citation credits the theoretical formulation and scientific
 method underlying the implementation.
-Related background paper:
+
 
 ### BibTeX
 
