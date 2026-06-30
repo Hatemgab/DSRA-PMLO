@@ -57,6 +57,7 @@ Software repository:
   doi     = {10.1007/s10922-024-09881-1}
 }
 ```
+
 ## Result Demonstration
 
 https://github.com/user-attachments/assets/a74d40a2-fe6e-4e91-8129-8563600149d8
