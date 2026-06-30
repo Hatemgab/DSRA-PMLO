@@ -47,15 +47,6 @@ Software repository:
   url       = {https://github.com/Hatemgab/DSRA-PMLO-Adaptive-Sampling}
 }
 
-@software{algabroun_wu_dsra_pmlo_2026,
-  author    = {Algabroun, Hatem and Wu, Sisi},
-  title     = {{DSRA-PMLO-Adaptive-Sampling}},
-  version   = {1.0.0},
-  year      = {2026},
-  publisher = {GitHub},
-  url       = {https://github.com/Hatemgab/DSRA-PMLO-Adaptive-Sampling}
-}
-
 @article{algabroun_hakansson_dsra_pmlo_2025,
   author  = {Algabroun, Hatem and Håkansson, Lars},
   title   = {Parametric Machine Learning-Based Adaptive Sampling Algorithm
