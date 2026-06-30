@@ -85,9 +85,15 @@ First, clone the repository and install the package:
 git clone https://github.com/Hatemgab/DSRA-PMLO-Adaptive-Sampling.git
 cd DSRA-PMLO-Adaptive-Sampling
 
-python3 -m venv .venv  # windows: py -m venv .venv
-source .venv/bin/activate  # windows: .venv\Scripts\activate.bat
+# macOS / Linux
+python3 -m venv .venv
+source .venv/bin/activate
 
+# Windows
+py -m venv .venv
+.venv\Scripts\activate
+
+# Install the package
 python -m pip install --upgrade pip
 python -m pip install -e .
 ```
@@ -95,7 +101,11 @@ python -m pip install -e .
 Run the project:
 
 ```bash
-python -m dsra_pmlo.use_case
+# macOS / Linux
+python3 -m dsra_pmlo.use_case
+
+# Windows
+py -m dsra_pmlo.use_case
 ```
 
 ### Option 2: Google Colab
@@ -188,7 +198,11 @@ config["mode"] = "manual"
 Then run:
 
 ```bash
+# macOS / Linux
 python3 -m dsra_pmlo.use_case
+
+# Windows
+py -m dsra_pmlo.use_case
 ```
 
 Manual mode guides the user through three grid-search plots before dual annealing optimization:
@@ -287,13 +301,21 @@ python3 src/dsra_pmlo/automated.py
 Instead, run the package entry point:
 
 ```bash
+# macOS / Linux
 python3 -m dsra_pmlo.use_case
+
+# Windows
+py -m dsra_pmlo.use_case
 ```
 
 Or install first:
 
 ```bash
+# macOS / Linux
 python3 -m pip install -e .
+
+# Windows
+py -m pip install -e .
 ```
 
 ### Python cannot find `dsra_pmlo`
@@ -301,7 +323,11 @@ python3 -m pip install -e .
 Make sure you installed from the repository root:
 
 ```bash
+# macOS / Linux
 python3 -m pip install -e .
+
+# Windows
+py -m pip install -e .
 ```
 
 The repository root is the folder containing `pyproject.toml`.
