@@ -30,6 +30,8 @@ dev = [
 
 [project.urls]
 Homepage = "https://github.com/Hatemgab/DSRA-PMLO-Adaptive-Sampling"
+Repository = "https://github.com/Hatemgab/DSRA-PMLO-Adaptive-Sampling"
+Issues = "https://github.com/Hatemgab/DSRA-PMLO-Adaptive-Sampling/issues"
 
 [project.scripts]
 dsra-use-case = "dsra_pmlo.use_case:main"
