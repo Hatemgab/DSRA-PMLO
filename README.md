@@ -108,19 +108,9 @@ Do not run `automated.py`, `manual.py`, or `base.py` directly. They are package 
 
 ## Video Demonstration
 
-<p align="center">
-  <a href="https://youtu.be/q6RAmPTH7zw">
-    <img
-      src="https://img.youtube.com/vi/q6RAmPTH7zw/maxresdefault.jpg"
-      alt="DSRA-PMLO video demonstration"
-      width="700"
-    >
-  </a>
-</p>
+[![DSRA-PMLO video demonstration](https://img.youtube.com/vi/q6RAmPTH7zw/hqdefault.jpg)](https://youtu.be/q6RAmPTH7zw)
 
-<p align="center">
-  <strong>Click the video preview to watch how to use the Manual and Automated modes.</strong>
-</p>
+**Click the video preview to watch how to use the Manual and Automated modes.**
 
 ## Environment Setup
 
