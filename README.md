@@ -64,7 +64,7 @@ Software repository:
 
 https://github.com/user-attachments/assets/a74d40a2-fe6e-4e91-8129-8563600149d8
 
-> *Above: Dynamic demonstration of the adaptive sampling process.*
+ *Above: Dynamic demonstration of the adaptive sampling process.*
 
 ## Project Overview
 
@@ -111,7 +111,7 @@ Do not run `automated.py`, `manual.py`, or `base.py` directly. They are package 
 <p align="center">
   <a href="https://youtu.be/q6RAmPTH7zw">
     <img
-      src="https://img.youtube.com/vi/q6RAmPTH7zw/hqdefault.jpg"
+      src="https://img.youtube.com/vi/q6RAmPTH7zw/maxresdefault.jpg"
       alt="DSRA-PMLO video demonstration"
       width="700"
     >
