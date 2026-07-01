@@ -110,7 +110,7 @@ Do not run `automated.py`, `manual.py`, or `base.py` directly. They are package 
 
 [![Video Demo](https://img.shields.io/badge/Video-Demo-red)](https://youtu.be/q6RAmPTH7zw?si=GKjFMcR7Is5H-a_S)
 
- *Click the badge above to watch a short video on how to use the Manual and Automated modes.*
+ **Click the badge above to watch a short video on how to use the Manual and Automated modes.**
 
 ## Environment Setup
 
